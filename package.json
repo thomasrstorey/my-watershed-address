@@ -1,0 +1,17 @@
+{
+  "name": "my-watershed-address",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thomasrstorey/my-watershed-address.git"
+  },
+  "dependencies": {
+    "body-parser": "~1.4.2",
+    "express": "~4.5.1",
+    "handlebars": "^2.0.0",
+    "hbs": "^2.8.0",
+    "method-override": "~2.0.2",
+    "underscore": "~1.7.0",
+    "proj4": "2.3.3"
+  }
+}

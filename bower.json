@@ -1,0 +1,8 @@
+{
+  "name": "my-watershed-address",
+  "version": "0.0.1",
+  "dependencies": {
+    "font-awesome": "latest",
+    "css-modal": "~1.2.0"
+  }
+}
