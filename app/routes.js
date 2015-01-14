@@ -2,13 +2,24 @@
 var _		= require('underscore');
 var fs 		= require('fs');
 
-module.exports = function(app, passport) {
+module.exports = function(app) {
 	// utility functions ==========================
 
 	// server routes (middleware) =================
 
 	app.get('/', function(req, res) {
-		res.render('index.hbs', data);
+		fs.readFile('./public/data/watershed_simple_converted.geojson', 'utf8', function (err, data) {
+			if(err){
+				res.send(err.message);
+			} else {
+				var geo = {watersheds: data};
+				res.render('index.hbs', geo);
+			}
+			
+		});
+		
+
+		
 	});
 
 	// frontend routes (Angularjs) ================

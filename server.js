@@ -36,7 +36,7 @@ app.engine('hbs', require('hbs').__express);
 
 // routes============================================================================
 
-require('./app/routes')(app, passport); // configure routes
+require('./app/routes')(app); // configure routes
 
 // utilities=========================================================================
 
