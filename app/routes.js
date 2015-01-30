@@ -8,7 +8,7 @@ module.exports = function(app) {
 	// server routes (middleware) =================
 
 	app.get('/', function(req, res) {
-		fs.readFile('./public/data/watershed_simple_converted.geojson', 'utf8', function (err, data) {
+		fs.readFile('./public/data/SubRegion_Simple_Converted.geojson', 'utf8', function (err, data) {
 			if(err){
 				res.send(err.message);
 			} else {
