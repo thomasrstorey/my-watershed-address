@@ -28,6 +28,7 @@ public/libs
 public/data/Watersheds
 public/data/Watersheds/*
 public/js/lodash.min.js
+public/css/*
 
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git-

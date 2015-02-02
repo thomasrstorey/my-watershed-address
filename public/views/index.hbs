@@ -5,7 +5,9 @@
   <title>My Florida Watershed Address</title>
   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
   <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.5/mapbox.js'></script>
+  <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-pip/v0.0.2/leaflet-pip.js'></script>
   <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.5/mapbox.css' rel='stylesheet' />
+  <link href='../css/style.css' rel='stylesheet' />
   <style>
     body { margin:0; padding:0; }
     #map { position:absolute; top:0; bottom:0; width:100%; }
@@ -17,30 +19,85 @@
 <script src="../js/config.js"></script>
 <script src="../js/polygons.js"></script>
 
+<div id="filters"></div>
+
 <div id='map'></div>
 
 <script>
 L.mapbox.accessToken = mapboxConfig.accessToken;
 var map = L.mapbox.map('map', 'examples.map-i86nkdio') // TO DO: replace with custom map
     .setView([29.6, -82.3], 8);
+var layers = {};
+leafletPip.bassackwards = true;
 
-var addGeoJsonLayer = function (url, style) {
-  var newLayer = L.mapbox.featureLayer()
+var addGeoJsonLayer = function (url, style, layers, name, enabled) {
+  layers[name] = L.mapbox.featureLayer()
     .loadURL(url)
     .on('ready', function () {
-        // After the 'ready' event fires, the GeoJSON contents are accessible
-        // and you can iterate through layers to bind custom popups.
-        newLayer.setStyle(style);
-        newLayer.eachLayer(function(layer) {
-            // See the `.bindPopup` documentation for full details. This
-            // dataset has a property called `name`: your dataset might not,
-            // so inspect it and customize to taste.
-            layer.bindPopup(layer.feature.properties.NAME);
-        });
+        layers[name].setFilter(function () { return enabled });
+        layers[name].setStyle(style);
     })
     .addTo(map);
-}
-_.forEach(polygons, function (p) { addGeoJsonLayer(p.data.url, p.style); });
+    layers[name].enabled = enabled;
+};
+
+var buildToggle = function (layer, key, filters) {
+  var item = filters.appendChild(document.createElement('div'));
+  var checkbox = item.appendChild(document.createElement('input'));
+  var label = item.appendChild(document.createElement('label'));
+
+  checkbox.type = 'checkbox';
+  checkbox.id = key;
+  checkbox.checked = layer.enabled;
+  checkbox.className = "filterControl";
+  label.innerHTML = key;
+  checkbox.addEventListener('change', updateFilters);
+};
+
+var updateFilters = function () {
+  var enabled = {};
+  var controls = document.getElementsByClassName('filterControl');
+  _.forEach(controls, function (c) {
+    if(c.checked) {
+      enabled[c.id] = true;
+    } else {
+      enabled[c.id] = false;
+    }
+  });
+  _.forEach(layers, function (l, k) {
+    l.setFilter(function (feature) { return enabled[k]; });
+    l.setStyle(_.find(polygons, function (p) { return p.data.name === k } ).style);
+  });
+};
+
+var addressFilter = function (inLayers){
+  //use names array to hide all features except those whose names match
+  if(inLayers.length){
+    _.forEach(layers, function (l, k) {
+      l.setFilter(function (feature) {
+        return feature.properties.NAME === _.some(inLayers, function (layer) { return layer.properties.NAME });
+      });
+    });
+  }
+};
+
+_.forEach(polygons, function (p) { addGeoJsonLayer(p.data.url, p.style, layers, p.data.name, p.data.enabled); });
+_.forEach(layers, function (l, k) { buildToggle(l, k, document.getElementById('filters')); });
+
+map.on('click', function (e){
+  //for each layer, get feature that e.containerPoint is inside
+  //call addressFilter with the array of names
+  var inLayers = [];
+  _.forEach(layers, function (l) {
+    var il = leafletPip.pointInLayer(_.toArray(e.latlng), l, false);
+    if(il.length){
+      inLayers.push(il);
+    }
+  });
+  addressFilter(inLayers);
+});
+
+
 </script>
 
 

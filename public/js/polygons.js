@@ -2,7 +2,8 @@ var polygons = [
 	{
 		data  : {
 						name : 'subregion',
-						url : '../data/SubRegion_MoreSimple_4326.geojson'
+						url : '../data/SubRegion_MoreSimple_4326.geojson',
+						enabled: true
 				},
 		style : {
 						color : "#f00",
@@ -15,7 +16,8 @@ var polygons = [
 	{
 	    data  : {
 	    				name : 'basin',
-						url : '../data/Basin_MoreSimple_4326.geojson'
+						url : '../data/Basin_MoreSimple_4326.geojson',
+						enabled: true
 				},
 		style : {
 						color : "#0f0",
@@ -27,7 +29,8 @@ var polygons = [
 	{
 	    data  : {
 	    				name : 'subbasin',
-						url : '../data/SubBasin_MoreSimple_4326.geojson'
+						url : '../data/SubBasin_MoreSimple_4326.geojson',
+						enabled: true
 				},
 		style : {
 						color : "#00f",
@@ -35,11 +38,12 @@ var polygons = [
 					    fillColor : "#00f",
 					    fillOpacity : 0.15
 				}
-     }/*,
+     },
 	{
 		data  : {
 						name : 'watershed',
-						url : '../data/Watershed_MoreSimple_4326.geojson'
+						url : '../data/Watershed_MoreSimple_4326.geojson',
+						enabled: false
 				},
 		style : {
 						color : "#ff0",
@@ -51,7 +55,8 @@ var polygons = [
 	{
 		data  : {
 						name : 'subwatershed',
-						url : '../data/SubWatershed_MoreSimple_4326.geojson'
+						url : '../data/SubWatershed_MoreSimple_4326.geojson',
+						enabled: false
 				},
 		style : {
 						color : "#0ff",
@@ -59,5 +64,5 @@ var polygons = [
 					    fillColor : "#0ff",
 					    fillOpacity : 0.15
 				}
-	 }*/
+	 }
 ]
