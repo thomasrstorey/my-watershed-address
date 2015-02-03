@@ -25,78 +25,95 @@
 
 <script>
 L.mapbox.accessToken = mapboxConfig.accessToken;
-var map = L.mapbox.map('map', 'examples.map-i86nkdio') // TO DO: replace with custom map
+var map = L.mapbox.map('map', 'examples.map-i86nkdio', {
+  attributionControl: false,
+  infoControl: true
+}) // TO DO: replace with custom map
     .setView([29.6, -82.3], 8);
-var layers = {};
-leafletPip.bassackwards = true;
 
-var addGeoJsonLayer = function (url, style, layers, name, enabled) {
-  layers[name] = L.mapbox.featureLayer()
-    .loadURL(url)
-    .on('ready', function () {
-        layers[name].setFilter(function () { return enabled });
-        layers[name].setStyle(style);
-    })
-    .addTo(map);
-    layers[name].enabled = enabled;
+var tiles = {
+  'Sub-Region'   : L.mapbox.tileLayer('trstorey.fbd7m9ig'),
+  'Basin'        : L.mapbox.tileLayer('trstorey.Basin'),
+  'Sub-Basin'    : L.mapbox.tileLayer('trstorey.Sub-Basin'),
+  'Watershed'    : L.mapbox.tileLayer('trstorey.Watershed'),
+  'Sub-Watershed': L.mapbox.tileLayer('trstorey.Sub-Watershed')
 };
 
-var buildToggle = function (layer, key, filters) {
-  var item = filters.appendChild(document.createElement('div'));
-  var checkbox = item.appendChild(document.createElement('input'));
-  var label = item.appendChild(document.createElement('label'));
-
-  checkbox.type = 'checkbox';
-  checkbox.id = key;
-  checkbox.checked = layer.enabled;
-  checkbox.className = "filterControl";
-  label.innerHTML = key;
-  checkbox.addEventListener('change', updateFilters);
+var grids = {
+  'Sub-Region'   : L.mapbox.gridLayer('trstorey.fbd7m9ig'),
+  'Basin'        : L.mapbox.gridLayer('trstorey.Basin'),
+  'Sub-Basin'    : L.mapbox.gridLayer('trstorey.Sub-Basin'),
+  'Watershed'    : L.mapbox.gridLayer('trstorey.Watershed'),
+  'Sub-Watershed': L.mapbox.gridLayer('trstorey.Sub-Watershed')
 };
 
-var updateFilters = function () {
-  var enabled = {};
-  var controls = document.getElementsByClassName('filterControl');
-  _.forEach(controls, function (c) {
-    if(c.checked) {
-      enabled[c.id] = true;
-    } else {
-      enabled[c.id] = false;
-    }
-  });
-  _.forEach(layers, function (l, k) {
-    l.setFilter(function (feature) { return enabled[k]; });
-    l.setStyle(_.find(polygons, function (p) { return p.data.name === k } ).style);
-  });
-};
+var ctrls = {
+  'Sub-Region' : undefined,
+  'Basin'      : undefined,
+  'Sub-Basin'  : undefined,
+  'Watershed'  : undefined,
+  'Sub-Watershed': undefined
+}
 
-var addressFilter = function (inLayers){
-  //use names array to hide all features except those whose names match
-  if(inLayers.length){
-    _.forEach(layers, function (l, k) {
-      l.setFilter(function (feature) {
-        return feature.properties.NAME === _.some(inLayers, function (layer) { return layer.properties.NAME });
-      });
-    });
-  }
-};
+L.control.layers({}, tiles).addTo(map);
 
-_.forEach(polygons, function (p) { addGeoJsonLayer(p.data.url, p.style, layers, p.data.name, p.data.enabled); });
-_.forEach(layers, function (l, k) { buildToggle(l, k, document.getElementById('filters')); });
-
-map.on('click', function (e){
-  //for each layer, get feature that e.containerPoint is inside
-  //call addressFilter with the array of names
-  var inLayers = [];
-  _.forEach(layers, function (l) {
-    var il = leafletPip.pointInLayer(_.toArray(e.latlng), l, false);
-    if(il.length){
-      inLayers.push(il);
-    }
-  });
-  addressFilter(inLayers);
+map.on('overlayadd', function (e) {
+  var gridData = _.find(grids, function (v, k) { return k === e.name; } );
+  ctrls[e.name] = L.mapbox.gridControl(gridData);
+  map.addLayer(gridData);
 });
 
+map.on('overlayremove', function (e) {
+  var gridData = _.find(grids, function (v, k) { return k === e.name; } );
+  map.removeLayer(gridData);
+});
+
+map.on('click', function (e) {
+  var popup = L.popup()
+  .setLatLng(e.latlng)
+  .setContent("Watershed Address: ")
+  .openOn(map);
+  _.forEach(grids, function (g, k) {
+    (function (g, k) {
+      g.getData(e.latlng, function (data) {
+       var content = popup.getContent() + data.NAME + " " + k;
+        if(k != "Sub-Watershed") {
+          content += " > ";
+        }
+        popup.setContent(content);
+        popup.update();
+      });
+    })(g, k);
+  });
+});
+
+// Initialize the geocoder control and add it to the map.
+var geocoderControl = L.mapbox.geocoderControl('mapbox.places');
+geocoderControl.addTo(map);
+
+// Listen for the `found` result and display the first result
+// in the output container. For all available events, see
+// https://www.mapbox.com/mapbox.js/api/v2.1.5/l-mapbox-geocodercontrol/#section-geocodercontrol-on
+geocoderControl.on('found', function(res) {
+  var ll = res.results.features[0].center;
+  _(ll).reverse().value();
+   var popup = L.popup()
+  .setLatLng(ll)
+  .setContent("Watershed Address: ")
+  .openOn(map);
+   _.forEach(grids, function (g, k) {
+    (function (g, k) {
+      g.getData(L.latLng(ll[0], ll[1]), function (data) {
+        var content = popup.getContent() + data.NAME + " " + k;
+        if(k != "Sub-Watershed") {
+          content += " > ";
+        }
+        popup.setContent(content);
+        popup.update();
+      });
+    })(g, k);
+  });
+});
 
 </script>
 
